@@ -1,4 +1,5 @@
 import { SorobanContextType } from "@soroban-react/core";
+import { useMemo } from "react";
 import useSWR from "swr";
 // TODO: verify type of fetcher args
 const fetcher = (...args: [any, any]) => fetch(...args).then((resp) => resp.json());
@@ -10,16 +11,20 @@ export const usePairs = (sorobanContext: SorobanContextType) => {
   );
 
   console.log("🚀 ~ file: usePairs.tsx:8 ~ usePairs ~ data:", data);
-  let pairs;
 
-  const filtered = data?.filter(
-    (item: any) =>
-      item.network === sorobanContext?.activeChain?.name?.toLowerCase(),
-  );
+  const filtered = useMemo(() => {
+    return data?.filter(
+      (item: any) =>
+        item.network === sorobanContext?.activeChain?.name?.toLowerCase(),
+    );
+  }, [data, sorobanContext?.activeChain?.name])
 
-  if (filtered?.length > 0) {
-    pairs = filtered[0].pairs;
-  }
+  return useMemo(() => {
+    let pairs;
+    if (filtered?.length > 0) {
+      pairs = filtered[0].pairs;
+    }
 
-  return pairs;
+    return pairs;
+  }, [filtered])
 };

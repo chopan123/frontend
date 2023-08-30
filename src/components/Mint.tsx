@@ -112,12 +112,12 @@ export function MintTokens({
   inputToken: TokenType;
   amountToMint: BigNumber;
 }) {
-  let formattedTokenBalance;
-  formattedTokenBalance = useFormattedTokenBalance(
+  // let formattedTokenBalance;
+  const formattedTokenBalance = useFormattedTokenBalance(
     inputToken.address,
     address,
   );
-  
+
 
   return (
     <div>

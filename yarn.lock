@@ -593,10 +593,10 @@
   dependencies:
     "@soroban-react/core" "^6.4.1"
 
-"@soroban-react/contracts@6.4.1":
-  version "6.4.1"
-  resolved "https://registry.yarnpkg.com/@soroban-react/contracts/-/contracts-6.4.1.tgz#dbbb7d09543e7fcee8266102861b280f3af474d5"
-  integrity sha512-5Itl/o1lE/56FlEeR5wmmqtc1GGmkbu9ifgley8sk7zwiRyigIn9zlIJoq9vMNqf651M8rEqmW6Cfbid9KL9VA==
+"@soroban-react/contracts@6.6.0":
+  version "6.6.0"
+  resolved "https://registry.yarnpkg.com/@soroban-react/contracts/-/contracts-6.6.0.tgz#3149e3148b4430189ab1ab5e30be6d53dd4443fe"
+  integrity sha512-cJnbLmtooVGyW69Hz1Ca//WaWyFDXt/yrIAqRLylm3ChHlJEmVp73zg1rz1YPxg1oDsajBtHz+d09LDR5lR3qg==
   dependencies:
     "@soroban-react/core" "^6.4.1"
     soroban-client "0.10.0"

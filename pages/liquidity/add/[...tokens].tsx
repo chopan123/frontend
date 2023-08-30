@@ -1,4 +1,3 @@
-import React from "react";
 import AddLiquidityPage from "../../../src/components/Add";
 import SEO from "../../../src/components/SEO";
 

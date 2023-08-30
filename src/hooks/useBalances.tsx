@@ -8,12 +8,13 @@ import { formatAmount } from "../helpers/utils";
 import { TokenMapType, TokenType } from "../interfaces";
 import { scValStrToJs } from "helpers/convert";
 import BigNumber from "bignumber.js";
+import { useEffect, useMemo, useState } from "react";
 //TODO: create Liquidity Pool Balances
 
 export function useTokenScVal(tokenAddress: string, userAddress: string) {
   const sorobanContext = useSorobanReact();
 
-  const address = userAddress;
+  const address = useMemo(() => userAddress, [userAddress]);
 
   const user = accountToScVal(address);
 
@@ -23,12 +24,8 @@ export function useTokenScVal(tokenAddress: string, userAddress: string) {
     args: [user],
     sorobanContext: sorobanContext,
   });
-  // console.log(
-  //   "🚀 ~ file: useBalances.tsx:26 ~ useTokenBalance ~ tokenBalance:",
-  //   tokenBalance,
-  // );
 
-  return tokenBalance;
+  return tokenBalance
 }
 
 export function useTokenDecimals(tokenAddress: string) {
@@ -40,62 +37,83 @@ export function useTokenDecimals(tokenAddress: string) {
     sorobanContext: sorobanContext,
   });
 
-  const tokenDecimals = decimals?.result?.u32() ?? 7;
-
-  return tokenDecimals;
+  // tokenDecimals
+  return useMemo(() => {
+    return decimals?.result?.u32() ?? 7;
+  }, [decimals])
 }
 
 export function useFormattedTokenBalance(
   tokenAddress: string,
   userAddress: string,
 ) {
-  // console.log("tokenAddress: ", tokenAddress);
+  console.log("useFormattedTokenBalance rerendered")
   const tokenBalance = useTokenScVal(tokenAddress, userAddress);
   const tokenDecimals = useTokenDecimals(tokenAddress);
-  const formattedBalance = formatAmount(
-    scvalToBigNumber(tokenBalance?.result),
-    tokenDecimals,
-  );
+
+  const formattedBalance = useMemo(() => {
+    return formatAmount(
+      scvalToBigNumber(tokenBalance?.result),
+      tokenDecimals,
+    );
+  }, [tokenBalance?.result, tokenDecimals])
+
   return formattedBalance;
 }
 
 export function useTokenBalances(userAddress: string, tokens: TokenType[] | TokenMapType) {
-  const address = userAddress;
-  const balances = Object.values(tokens).map((token) => {
+  const sorobanContext = useSorobanReact();
+  const initBalances = Object.values(tokens).map((token) => {
     return {
       // eslint-disable-next-line react-hooks/rules-of-hooks
-      balance: useFormattedTokenBalance(token.address, address),
+      balance: "",
       usdValue: 0,//TODO: should get usd value
       symbol: token.symbol,
       address: token.address,
     };
-  });
+  })
+  const [balances, setBalances] = useState<{ balances: { balance: string; usdValue: number; symbol: string; address: string; }[]; loading: boolean; } | undefined>
+    ({
+      balances: initBalances,
+      loading: true
+    })
 
-  // Calculate the loading state
-  const loading = balances.some((balance) => balance.balance === null);
+  useEffect(() => {
+    tokenBalances(userAddress, tokens, sorobanContext)
+      .then((bal) => {
+        console.log("useBalances then")
+        setBalances(bal)
+      })
+  }, [sorobanContext, tokens, userAddress])
 
-  return {
-    balances: balances,
-    loading: loading,
-  };
+
+  return balances
+
 }
 
 export function useTokenBalance(userAddress: string, token: TokenType) {
   const address = userAddress;
-  const balance = {
-      balance: useFormattedTokenBalance(token.address, address),
+  const formattedTokenBalance = useFormattedTokenBalance(token.address, address)
+
+  const balance = useMemo(() => {
+    return {
+      balance: formattedTokenBalance,
       usdValue: 0,//should get usd value
       symbol: token.symbol,
       address: token.address,
     };
 
+  }, [formattedTokenBalance, token.address, token.symbol])
+
   // Calculate the loading state
   const loading = false;
 
-  return {
-    balance: balance,
-    loading: loading,
-  };
+  return useMemo(() => {
+    return {
+      balance: balance,
+      loading: loading,
+    };
+  }, [balance, loading])
 }
 
 export async function tokenBalance(tokenAddress: string, userAddress: string, sorobanContext: SorobanContextType) {
@@ -110,7 +128,7 @@ export async function tokenBalance(tokenAddress: string, userAddress: string, so
     });
 
     return scValStrToJs(tokenBalance?.xdr ?? "") as BigNumber.Value;
-  } catch(error) {
+  } catch (error) {
     console.error("Error fetching token balance:", error);
     return 0; // or throw error;
   }
@@ -126,7 +144,7 @@ export async function tokenDecimals(tokenAddress: string, userAddress: string, s
     const tokenDecimals = scValStrToJs(decimals?.xdr ?? "") as number ?? 7;
 
     return tokenDecimals;
-  } catch(error) {
+  } catch (error) {
     console.error("Error fetching token balance:", error);
     return 7; // or throw error;
   }
@@ -145,7 +163,7 @@ export async function tokenBalances(userAddress: string, tokens: TokenType[] | T
         BigNumber(balanceResponse),
         decimalsResponse,
       );
-      
+
       return {
         balance: formattedBalance,
         usdValue: 0, //TODO: should get usd value

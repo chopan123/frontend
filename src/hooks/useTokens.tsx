@@ -12,19 +12,23 @@ export const useTokens = (sorobanContext: SorobanContextType) => {
     `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/tokens`,
     fetcher,
   );
-  let tokens: TokenType[] = [];
-  
+  console.log("useTokens rendered")
   //TODO: Hardcode one activeChain for default tokens
-  const filtered = data?.filter(
-    (item: tokensResponse) =>
-      item.network === sorobanContext?.activeChain?.name?.toLowerCase(),
-  );
+  const filtered = useMemo(() => {
+    return data?.filter(
+      (item: tokensResponse) =>
+        item.network === sorobanContext?.activeChain?.name?.toLowerCase(),
+    );
+  }, [data, sorobanContext?.activeChain?.name])
 
-  if (filtered?.length > 0) {
-    tokens = filtered[0].tokens;
-  }
+  return useMemo(() => {
+    let tokens: TokenType[] = [];
+    if (filtered?.length > 0) {
+      tokens = filtered[0].tokens;
+    }
 
-  return tokens;
+    return tokens;
+  }, [filtered])
 };
 
 // reduce token array into a map 
@@ -68,11 +72,13 @@ export function useToken(tokenAddress?: string | null) {
 }
 
 export function useTokenFromMapOrNetwork(tokens: TokenMapType, tokenAddress?: string | null): TokenType | null | undefined {
-  const address = isAddress(tokenAddress)
-  const token: TokenType | undefined = address ? tokens[address] : undefined
+  const address = useMemo(() => isAddress(tokenAddress), [tokenAddress])
+  const token: TokenType | undefined = useMemo(
+    () => address ? tokens[address] : undefined
+    , [address, tokens])
   const tokenFromNetwork = useTokenFromActiveNetwork(token ? undefined : address ? address : undefined)
 
-  return tokenFromNetwork ?? token
+  return useMemo(() => tokenFromNetwork ?? token, [tokenFromNetwork, token])
 }
 
 /**
