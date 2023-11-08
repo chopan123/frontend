@@ -111,7 +111,14 @@ export function useSwapCallback(
     ];
 
     const pathScVal = SorobanClient.nativeToScVal(pathAddresses);
-
+    const humanReadableArgs = [
+      amount0.toString(),
+      amount1.toString(),
+      [trade.inputAmount?.currency.address,
+        trade.outputAmount?.currency.address],
+      address!
+    ]
+    console.log("humanReadableArgs:", humanReadableArgs)
     const args = [
       amount0ScVal,
       amount1ScVal,

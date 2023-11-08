@@ -62,6 +62,11 @@ export function useBestTrade(
 
   useEffect(() => {
     if (amountSpecified?.value && pairAddress && reserves) {
+      console.log("reserves.token0:", reserves.token0)
+      console.log("reserves.token1:", reserves.token1)
+      console.log("reserves.reserve0:", reserves.reserve0?.toString())
+      console.log("reserves.reserve1:", reserves.reserve1?.toString())
+
       getExpectedAmountNew(
         currencyIn,
         currencyOut,

@@ -22,5 +22,23 @@ function getExpectedAmountFromReserves(
   let amountInWithFee = amountIn.multipliedBy(997);
   let numerator = amountInWithFee.multipliedBy(reserveOut);
   let denominator = reserveIn.multipliedBy(1000).plus(amountInWithFee);
-  return numerator.dividedBy(denominator);
+  const result1 =  numerator.dividedBy(denominator);
+
+  const fee1000 = 3 // 0.3%, 
+  const gamma1000 = BigNumber(1000).minus(fee1000)
+
+  const result2 =  reserveOut
+  .multipliedBy(amountIn)
+  .multipliedBy(gamma1000)
+  .dividedBy(reserveIn.plus(
+    amountIn.multipliedBy(gamma1000).dividedBy(BigNumber(1000))
+  )).dividedBy(BigNumber(1000))
+
+  console.log("amountIn:", amountIn.toString())
+  console.log("reserveIn:", reserveIn.toString())
+  console.log("reserveOut:", reserveOut.toString())
+  console.log("getExpectedAmountFromReserves: result1", result1.toString() )
+  console.log("getExpectedAmountFromReserves: result2", result2.toString() )
+
+  return result1
 }

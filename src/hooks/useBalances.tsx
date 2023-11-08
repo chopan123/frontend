@@ -42,6 +42,7 @@ export async function tokenBalance(
 
     return scValToJs(tokenBalance as xdr.ScVal) as BigNumber;
   } catch (error) {
+    console.log("error", error)
     return 0; // or throw error;
   }
 }
@@ -73,13 +74,15 @@ export async function tokenBalances(
     Object.values(tokens).map(async (token) => {
       const balanceResponse = await tokenBalance(token.address, userAddress, sorobanContext);
       const decimalsResponse = await tokenDecimals(token.address, sorobanContext);
-
+      console.log("balanceResponse",balanceResponse)
       let balance: number | string | BigNumber;
       if (formatted) {
         balance = formatTokenAmount(BigNumber(balanceResponse), decimalsResponse);
       } else {
         balance = balanceResponse;
       }
+      console.log("balance:", balance.toString())
+      console.log("token:", token)
 
       return {
         balance: balance,
