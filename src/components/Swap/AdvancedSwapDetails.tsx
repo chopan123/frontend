@@ -107,16 +107,6 @@ export function AdvancedSwapDetails({
     reserves,
   ]);
 
-  const getOutputAmount = () => {
-    const outputAmount = Number(trade?.outputAmount?.value ?? '0');
-
-    const slippagePercentage = allowedSlippage / 100;
-
-    const slippage = slippagePercentage * outputAmount;
-
-    return formatTokenAmount(outputAmount - slippage);
-  };
-
   // twoDecimalsPercentage()}%
 
   return (
@@ -158,15 +148,13 @@ export function AdvancedSwapDetails({
                 price changes while your transaction is pending.
               `}
           >
-            <BodySmall color="textSecondary">
-              {/* TODO: Get slippage and do (outputAmount * (1-slippage%)) */}
-              Expected output
-            </BodySmall>
+            <BodySmall color="textSecondary">Expected output</BodySmall>
           </MouseoverTooltip>
         </RowFixed>
         <TextWithLoadingPlaceholder syncing={syncing} width={65}>
           <BodySmall style={{ display: 'flex', alignItems: 'center' }} component="div">
-            {getOutputAmount()} {trade?.outputAmount?.currency.symbol}{' '}
+            {formatTokenAmount(trade?.outputAmount?.value ?? '0')}{' '}
+            {trade?.outputAmount?.currency.symbol}{' '}
             <CurrencyLogo
               currency={trade?.outputAmount?.currency}
               size="16px"

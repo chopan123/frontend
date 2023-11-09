@@ -1,8 +1,9 @@
-import { contractInvoke } from '@soroban-react/contracts';
+import { TxResponse, contractInvoke } from '@soroban-react/contracts';
 import { useSorobanReact } from '@soroban-react/core';
 import { useCallback } from 'react';
 import * as SorobanClient from 'soroban-client';
 import { useRouterAddress } from './useRouterAddress';
+import { useSWRConfig } from 'swr';
 
 export enum RouterMethod {
   ADD_LIQUIDITY = 'add_liquidity',
@@ -21,33 +22,43 @@ export enum RouterMethod {
 
 const isObject = (val: any) => typeof val === 'object' && val !== null && !Array.isArray(val);
 
+//refetch balance, lptokens and reserves after router tx success
+const revalidateKeysCondition = (key: any) =>
+  Array.isArray(key) &&
+  (key.includes('balance') || key.includes('lp-tokens') || key.includes('reserves'));
+
 export function useRouterCallback() {
   const sorobanContext = useSorobanReact();
   const { router } = useRouterAddress();
   const router_address = router?.router_address;
+  const { mutate } = useSWRConfig();
 
   return useCallback(
     async (method: RouterMethod, args?: SorobanClient.xdr.ScVal[], signAndSend?: boolean) => {
-      let result = await contractInvoke({
+      console.log('🚀 ~ file: useRouterCallback.tsx:34 ~ contractAddress:', router_address);
+      console.log('🚀 ~ file: useRouterCallback.tsx:36 ~ method:', method);
+      console.log('🚀 ~ file: useRouterCallback.tsx:38 ~ args:', args);
+      console.log('🚀 ~ file: useRouterCallback.tsx:40 ~ sorobanContext:', sorobanContext);
+      console.log('🚀 ~ file: useRouterCallback.tsx:42 ~ signAndSend:', signAndSend);
+
+      let result = (await contractInvoke({
         contractAddress: router_address as string,
         method: method,
         args: args,
         sorobanContext,
         signAndSend: signAndSend,
-      });
-
-      sorobanContext.connect();
-
-      const response = result as SorobanClient.SorobanRpc.GetSuccessfulTransactionResponse;
+      })) as TxResponse;
 
       if (
-        isObject(response) &&
-        response?.status !== SorobanClient.SorobanRpc.GetTransactionStatus.SUCCESS
+        isObject(result) &&
+        result?.status !== SorobanClient.SorobanRpc.GetTransactionStatus.SUCCESS
       )
-        throw response;
+        throw result;
+
+      mutate((key: any) => revalidateKeysCondition(key), undefined, { revalidate: true });
 
       return result;
     },
-    [router_address, sorobanContext],
+    [router_address, sorobanContext, mutate],
   );
 }
