@@ -1,4 +1,4 @@
-import { CircularProgress, Typography, styled } from '@mui/material';
+import { Box, CircularProgress, Typography, styled } from '@mui/material';
 import CardContent from '@mui/material/CardContent';
 import { useMintTestToken } from 'hooks/useMintTestToken';
 import { ButtonPrimary } from './Buttons/Button';
@@ -60,11 +60,26 @@ export function Balances() {
     });
   };
 
+  const getButtonTxt = () => {
+    if (isMinting)
+      return (
+        <Box display="flex" alignItems="center" gap="6px">
+          Minting {currentMintingToken?.symbol} <CircularProgress size="18px" />
+        </Box>
+      );
+    return `Mint test tokens`;
+  };
+
+  const isButtonDisabled = () => {
+    if (isMinting) return true;
+    return false;
+  };
+
   return (
     <PageWrapper>
       <CardContent>
         <Typography gutterBottom variant="h5" component="div">
-          Your Balances:
+          {"Your test token's balance:"}
         </Typography>
 
         {sorobanContext.address && tokens.length > 0 && (
@@ -81,7 +96,8 @@ export function Balances() {
                   <CircularProgress size="12px" />
                 ) : (
                   <p>
-                    {tokenBalance.symbol} : {tokenBalance.balance as string}
+                    {tokenBalance.symbol} :{' '}
+                    {Number(tokenBalance.balance).toLocaleString('en') as string}
                   </p>
                 )}
               </div>
@@ -102,8 +118,12 @@ export function Balances() {
             </ButtonPrimary>
           </>
         ) : (
-          <ButtonPrimary onClick={handleMint} disabled={isMinting} style={{ marginTop: '24px' }}>
-            {isMinting ? `Minting ${currentMintingToken?.symbol}` : `Mint test tokens`}
+          <ButtonPrimary
+            onClick={handleMint}
+            disabled={isButtonDisabled()}
+            style={{ marginTop: '24px' }}
+          >
+            {getButtonTxt()}
           </ButtonPrimary>
         )}
       </CardContent>
